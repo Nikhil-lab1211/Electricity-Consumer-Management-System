@@ -1,0 +1,67 @@
+<!-- user_app/templates/user_app/report_outage.html -->
+{% extends 'user_app/base.html' %}
+{% load static %}
+
+{% block title %}PSPCL - Report Outage{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Report Power Outage</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle me-2"></i> Report power outages in your area to help us restore services quickly.
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.area_code.id_for_label }}" class="form-label">Area Code/Pin Code *</label>
+                        {{ form.area_code }}
+                        {% if form.area_code.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.area_code.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Enter the area/pin code where the outage is occurring</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Description *</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.description.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Provide details about the outage (when it started, specific location, etc.)</div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Submit Report</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer">
+                <p class="mb-0"><i class="fas fa-phone-alt me-2"></i> For emergency situations, call our helpline: <strong>1800-XXX-XXXX</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

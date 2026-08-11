@@ -1,0 +1,117 @@
+<!-- user_app/templates/user_app/pay_bill.html -->
+{% extends 'user_app/base.html' %}
+{% load static %}
+
+{% block title %}PSPCL - Pay Bill{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Pay Electricity Bill</h4>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5>Bill Information</h5>
+                        <p><strong>Bill Number:</strong> {{ bill.bill_number }}</p>
+                        <p><strong>Bill Date:</strong> {{ bill.bill_date|date:"F d, Y" }}</p>
+                        <p><strong>Due Date:</strong> {{ bill.due_date|date:"F d, Y" }}</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <h5>Amount Due</h5>
+                        <h3 class="text-primary mb-0">₹{{ bill.amount }}</h3>
+                        <p class="text-muted">Due on {{ bill.due_date|date:"M d, Y" }}</p>
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Payment Information</h5>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.consumer_id.id_for_label }}" class="form-label">Consumer ID</label>
+                                {{ form.consumer_id }}
+                                <div class="form-text">Your unique consumer identifier</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.bill_amount.id_for_label }}" class="form-label">Bill Amount (₹)</label>
+                                {{ form.bill_amount }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.payment_method.id_for_label }}" class="form-label">Payment Method</label>
+                                {{ form.payment_method }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="credit_card_details" class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Card Details</h5>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Card Number</label>
+                                <input type="text" class="form-control" placeholder="1234 5678 9012 3456">
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Expiry Date</label>
+                                    <input type="text" class="form-control" placeholder="MM/YY">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">CVV</label>
+                                    <input type="text" class="form-control" placeholder="123">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Cardholder Name</label>
+                                <input type="text" class="form-control" placeholder="Name on card">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="terms" required>
+                        <label class="form-check-label" for="terms">
+                            I agree to the terms and conditions for online payment
+                        </label>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Make Payment</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{% url 'bills' %}" class="btn btn-outline-primary">Back to Bills</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Toggle payment details based on selected method
+        $('#id_payment_method').change(function() {
+            if ($(this).val() === 'credit_card' || $(this).val() === 'debit_card') {
+                $('#credit_card_details').show();
+            } else {
+                $('#credit_card_details').hide();
+            }
+        });
+        
+        // Trigger on page load
+        $('#id_payment_method').change();
+    });
+</script>
+{% endblock %}
+{% endblock %}

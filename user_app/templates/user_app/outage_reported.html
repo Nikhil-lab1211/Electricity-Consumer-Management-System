@@ -1,0 +1,140 @@
+<!-- user_app/templates/user_app/outage_reported.html -->
+{% extends 'user_app/base.html' %}
+{% load static %}
+
+{% block title %}PSPCL - Outage Reported{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-check-circle me-2"></i> Power Outage Reported Successfully</h4>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-bolt fa-5x text-warning mb-3"></i>
+                    <h3>Thank You for Reporting</h3>
+                    <p class="lead">Your power outage report has been registered. Our team has been notified.</p>
+                </div>
+                
+                <div class="alert alert-info">
+                    <p class="mb-0"><strong>Outage Reference ID:</strong> #{{ outage.id }}</p>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        Outage Details
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Area Code:</strong> {{ outage.area_code }}</p>
+                                <p><strong>Reported On:</strong> {{ outage.start_time|date:"M d, Y h:i A" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Status:</strong> <span class="badge bg-danger">{{ outage.get_status_display }}</span></p>
+                                <p><strong>Estimated Resolution:</strong> {{ outage.estimated_resolution_time|date:"M d, Y h:i A" }}</p>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h6>Description:</h6>
+                            <p>{{ outage.description }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        Outage Response Timeline
+                    </div>
+                    <div class="card-body">
+                        <ul class="timeline">
+                            <li class="timeline-item">
+                                <div class="timeline-marker bg-success"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-0">Outage Reported</h6>
+                                    <p class="small text-muted">{{ outage.start_time|date:"M d, Y h:i A" }}</p>
+                                    <p>Our system has registered your outage report.</p>
+                                </div>
+                            </li>
+                            <li class="timeline-item">
+                                <div class="timeline-marker bg-warning"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-0">Investigation</h6>
+                                    <p class="small text-muted">In Progress</p>
+                                    <p>Our team will investigate the cause of the outage.</p>
+                                </div>
+                            </li>
+                            <li class="timeline-item">
+                                <div class="timeline-marker bg-light"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-0">Resolution</h6>
+                                    <p class="small text-muted">Expected by {{ outage.estimated_resolution_time|date:"M d, Y h:i A" }}</p>
+                                    <p>Power restoration work will be completed.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <h5 class="alert-heading">Important Information</h5>
+                    <p>Our team is working to restore power as quickly as possible. The estimated resolution time is subject to change based on the severity of the issue.</p>
+                    <hr>
+                    <p class="mb-0">For emergency situations or updates, please contact our 24/7 helpline at <strong>1800-XXX-XXXX</strong>.</p>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="{% url 'view_outages' %}" class="btn btn-primary me-2">
+                        <i class="fas fa-list me-1"></i> View All Outages
+                    </a>
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-home me-1"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 40px;
+    margin-bottom: 20px;
+}
+
+.timeline-item:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 3px #f8f9fa;
+}
+
+.timeline:before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    height: 100%;
+    width: 2px;
+    background-color: #e9ecef;
+}
+</style>
+{% endblock %}

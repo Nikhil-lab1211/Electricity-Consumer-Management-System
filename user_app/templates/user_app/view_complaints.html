@@ -1,0 +1,142 @@
+<!-- user_app/templates/user_app/view_complaints.html -->
+{% extends 'user_app/base.html' %}
+{% load static %}
+
+{% block title %}PSPCL - View Complaints{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Complaint History</h4>
+        {% if user.role == 'consumer' %}
+        <a href="{% url 'file_complaint' %}" class="btn btn-light btn-sm">
+            <i class="fas fa-plus-circle"></i> File New Complaint
+        </a>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        {% if complaints %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Complaint #</th>
+                            <th>Subject</th>
+                            <th>Date Filed</th>
+                            <th>Status</th>
+                            {% if user.role in 'admin,staff' %}
+                                <th>Consumer</th>
+                            {% endif %}
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for complaint in complaints %}
+                            <tr>
+                                <td>{{ complaint.complaint_number }}</td>
+                                <td>{{ complaint.subject }}</td>
+                                <td>{{ complaint.complaint_date|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if complaint.status == 'open' %}
+                                        <span class="badge bg-danger">Open</span>
+                                    {% elif complaint.status == 'in_progress' %}
+                                        <span class="badge bg-warning">In Progress</span>
+                                    {% elif complaint.status == 'resolved' %}
+                                        <span class="badge bg-success">Resolved</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Closed</span>
+                                    {% endif %}
+                                </td>
+                                {% if user.role in 'admin,staff' %}
+                                    <td>{{ complaint.consumer.user.full_name }}</td>
+                                {% endif %}
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#complaintModal{{ complaint.id }}">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <!-- Modal for complaint details -->
+                            <div class="modal fade" id="complaintModal{{ complaint.id }}" tabindex="-1" aria-labelledby="complaintModalLabel{{ complaint.id }}" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-primary text-white">
+                                            <h5 class="modal-title" id="complaintModalLabel{{ complaint.id }}">Complaint #{{ complaint.complaint_number }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <p><strong>Subject:</strong> {{ complaint.subject }}</p>
+                                                    <p><strong>Filed on:</strong> {{ complaint.complaint_date|date:"M d, Y h:i A" }}</p>
+                                                    <p><strong>Status:</strong> 
+                                                        {% if complaint.status == 'open' %}
+                                                            <span class="badge bg-danger">Open</span>
+                                                        {% elif complaint.status == 'in_progress' %}
+                                                            <span class="badge bg-warning">In Progress</span>
+                                                        {% elif complaint.status == 'resolved' %}
+                                                            <span class="badge bg-success">Resolved</span>
+                                                        {% else %}
+                                                            <span class="badge bg-secondary">Closed</span>
+                                                        {% endif %}
+                                                    </p>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    {% if user.role in 'admin,staff' %}
+                                                        <p><strong>Consumer:</strong> {{ complaint.consumer.user.full_name }}</p>
+                                                        <p><strong>Account Number:</strong> {{ complaint.consumer.account_number }}</p>
+                                                    {% endif %}
+                                                    {% if complaint.assigned_to %}
+                                                        <p><strong>Assigned to:</strong> {{ complaint.assigned_to.full_name }}</p>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="card mb-3">
+                                                <div class="card-header">
+                                                    Description
+                                                </div>
+                                                <div class="card-body">
+                                                    <p>{{ complaint.description }}</p>
+                                                </div>
+                                            </div>
+                                            
+                                            {% if complaint.resolution_description %}
+                                                <div class="card">
+                                                    <div class="card-header">
+                                                        Resolution
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <p><strong>Resolved on:</strong> {{ complaint.resolution_date|date:"M d, Y h:i A" }}</p>
+                                                        <p>{{ complaint.resolution_description }}</p>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            {% if user.role in 'admin,staff' and complaint.status != 'closed' %}
+                                                <a href="#" class="btn btn-primary">Update Status</a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                {% if user.role == 'consumer' %}
+                    You haven't filed any complaints yet.
+                {% else %}
+                    No complaints have been filed.
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

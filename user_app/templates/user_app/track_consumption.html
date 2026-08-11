@@ -1,0 +1,201 @@
+<!-- user_app/templates/user_app/track_consumption.html -->
+{% extends 'user_app/base.html' %}
+{% load static %}
+
+{% block title %}PSPCL - Track Consumption{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Power Consumption History</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="card border-primary h-100">
+                            <div class="card-header bg-light">Account Details</div>
+                            <div class="card-body">
+                                <p><strong>Consumer ID:</strong> {{ consumer.consumer_id }}</p>
+                                <p><strong>Meter Number:</strong> {{ consumer.meter_number }}</p>
+                                <p><strong>Connection Type:</strong> {{ consumer.get_connection_type_display }}</p>
+                                <p><strong>Sanctioned Load:</strong> {{ consumer.sanctioned_load }} kW</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">Monthly Consumption Trend</div>
+                            <div class="card-body">
+                                <canvas id="consumptionChart" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h5 class="mt-4 mb-3">Consumption Records</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Reading Date</th>
+                                <th>Meter Reading</th>
+                                <th>Units Consumed</th>
+                                <th>Reading Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in records %}
+                                <tr>
+                                    <td>{{ record.reading_date|date:"M d, Y" }}</td>
+                                    <td>{{ record.meter_reading }}</td>
+                                    <td>{{ record.units_consumed }}</td>
+                                    <td>
+                                        {% if record.reading_type == 'actual' %}
+                                            <span class="badge bg-success">{{ record.get_reading_type_display }}</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">{{ record.get_reading_type_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No consumption records available yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-light">Energy Saving Tips</div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item"><i class="fas fa-lightbulb text-warning me-2"></i> Replace traditional bulbs with LED lights</li>
+                                    <li class="list-group-item"><i class="fas fa-temperature-low text-primary me-2"></i> Set your AC temperature to 24°C or higher</li>
+                                    <li class="list-group-item"><i class="fas fa-plug text-danger me-2"></i> Unplug electronics when not in use</li>
+                                    <li class="list-group-item"><i class="fas fa-sun text-warning me-2"></i> Use natural light during daytime</li>
+                                    <li class="list-group-item"><i class="fas fa-power-off text-success me-2"></i> Turn off lights when leaving a room</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-light">Yearly Analysis</div>
+                            <div class="card-body">
+                                <canvas id="yearlyChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+    // Monthly consumption chart
+    var ctx = document.getElementById('consumptionChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [{% for label in labels %}'{{ label }}',{% endfor %}],
+            datasets: [{
+                label: 'Units Consumed',
+                data: [{% for datapoint in data %}{{ datapoint }},{% endfor %}],
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2,
+                tension: 0.3,
+                pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Units (kWh)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        }
+    });
+    
+    // Yearly comparison chart - dummy data for example
+    var yearCtx = document.getElementById('yearlyChart').getContext('2d');
+    var yearChart = new Chart(yearCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: 'Current Year',
+                data: [120, 135, 140, 150, 160, 180, 190, 185, 170, 0, 0, 0],
+                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            },
+            {
+                label: 'Previous Year',
+                data: [110, 125, 130, 145, 150, 165, 175, 170, 160, 155, 140, 130],
+                backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Units (kWh)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: false,
+                    text: 'Monthly Consumption Comparison'
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

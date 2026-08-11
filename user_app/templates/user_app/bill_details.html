@@ -1,0 +1,77 @@
+<!-- user_app/templates/user_app/bill_details.html -->
+{% extends 'user_app/base.html' %}
+{% load static %}
+
+{% block title %}PSPCL - Bill Details{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Electricity Bill Details</h4>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5>Bill Information</h5>
+                        <p><strong>Bill Number:</strong> {{ bill.bill_number }}</p>
+                        <p><strong>Bill Date:</strong> {{ bill.bill_date|date:"F d, Y" }}</p>
+                        <p><strong>Due Date:</strong> {{ bill.due_date|date:"F d, Y" }}</p>
+                        <p><strong>Status:</strong> 
+                            {% if bill.status == 'paid' %}
+                                <span class="badge bg-success">Paid</span>
+                            {% elif bill.status == 'unpaid' %}
+                                <span class="badge bg-warning">Unpaid</span>
+                            {% else %}
+                                <span class="badge bg-danger">Overdue</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Consumer Information</h5>
+                        <p><strong>Consumer ID:</strong> {{ bill.consumer.consumer_id }}</p>
+                        <p><strong>Name:</strong> {{ bill.consumer.user.full_name }}</p>
+                        <p><strong>Account Number:</strong> {{ bill.consumer.account_number }}</p>
+                        <p><strong>Connection Type:</strong> {{ bill.consumer.get_connection_type_display }}</p>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5>Billing Summary</h5>
+                                        <p><strong>Units Consumed:</strong> {{ bill.units_consumed }}</p>
+                                        <p><strong>Rate Applied:</strong> Based on {{ bill.consumer.get_connection_type_display }} connection</p>
+                                    </div>
+                                    <div class="col-md-6 text-md-end">
+                                        <h5>Amount Due</h5>
+                                        <h3 class="text-primary mb-0">₹{{ bill.amount }}</h3>
+                                        <p class="text-muted">Due on {{ bill.due_date|date:"M d, Y" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if bill.status != 'paid' %}
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'pay_bill' bill.id %}" class="btn btn-primary">Pay Now</a>
+                    </div>
+                {% elif bill.payment_date %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i> This bill was paid on {{ bill.payment_date|date:"F d, Y" }} via {{ bill.payment_method }}.
+                    </div>
+                {% endif %}
+            </div>
+            <div class="card-footer text-center">
+                <a href="{% url 'check_bill' %}" class="btn btn-outline-primary">Check Another Bill</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

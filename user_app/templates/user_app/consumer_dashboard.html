@@ -1,0 +1,132 @@
+<!-- user_app/templates/user_app/consumer_dashboard.html -->
+{% extends 'user_app/base.html' %}
+{% load static %}
+
+{% block title %}PSPCL - Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 class="mb-3">Welcome, {{ user.full_name }}</h2>
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Consumer Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Consumer ID:</strong> {{ consumer.consumer_id }}</p>
+                        <p><strong>Account Number:</strong> {{ consumer.account_number }}</p>
+                        <p><strong>Meter Number:</strong> {{ consumer.meter_number }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Connection Type:</strong> {{ consumer.get_connection_type_display }}</p>
+                        <p><strong>Sanctioned Load:</strong> {{ consumer.sanctioned_load }} kW</p>
+                        <p><strong>Address:</strong> {{ consumer.address }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'bills' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-file-invoice me-2"></i> View Bills
+                    </a>
+                    <a href="{% url 'track_consumption' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-chart-line me-2"></i> Track Consumption
+                    </a>
+                    <a href="{% url 'file_complaint' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-headset me-2"></i> File Complaint
+                    </a>
+                    <a href="{% url 'report_outage' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-bolt me-2"></i> Report Outage
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Power Consumption Trend</h5>
+                <a href="{% url 'track_consumption' %}" class="btn btn-sm btn-light">View Details</a>
+            </div>
+            <div class="card-body">
+                <canvas id="consumptionChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Latest Bill</h5>
+            </div>
+            <div class="card-body">
+                {% if bills %}
+                    {% with latest_bill=bills.0 %}
+                        <div class="text-center mb-3">
+                            <h3 class="text-primary mb-0">₹{{ latest_bill.amount }}</h3>
+                            <p class="text-muted">Due on {{ latest_bill.due_date|date:"M d, Y" }}</p>
+                        </div>
+                        <p><strong>Bill Number:</strong> {{ latest_bill.bill_number }}</p>
+                        <p><strong>Bill Date:</strong> {{ latest_bill.bill_date|date:"M d, Y" }}</p>
+                        <p><strong>Units Consumed:</strong> {{ latest_bill.units_consumed }}</p>
+                        <p><strong>Status:</strong>
+                            {% if latest_bill.status == 'paid' %}
+                                <span class="badge bg-success">Paid</span>
+                            {% elif latest_bill.status == 'unpaid' %}
+                                <span class="badge bg-warning">Unpaid</span>
+                            {% else %}
+                                <span class="badge bg-danger">Overdue</span>
+                            {% endif %}
+                        </p>
+                    {% endwith %}
+                {% else %}
+                    <p class="text-muted">No bills available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+// Chart.js example script
+var ctx = document.getElementById('consumptionChart').getContext('2d');
+var consumptionChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+            label: 'Consumption (kWh)',
+            data: [150, 200, 180, 220, 210, 190],
+            backgroundColor: 'rgba(0, 123, 255, 0.2)',
+            borderColor: 'rgba(0, 123, 255, 1)',
+            borderWidth: 2,
+            tension: 0.3
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+</script>
+{% endblock %}
